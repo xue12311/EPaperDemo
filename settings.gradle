@@ -10,3 +10,4 @@ dependencyResolutionManagement {
 rootProject.name = "EPaperDemo"
 include ':app'
 include ':library_epager'
+include ':base_common_library'
