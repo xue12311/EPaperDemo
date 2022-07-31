@@ -1,0 +1,70 @@
+plugins {
+    id 'com.android.library'
+    id 'kotlin-android'
+    id 'kotlin-kapt'
+}
+
+android {
+    compileSdk 32
+
+    defaultConfig {
+        minSdk 21
+        targetSdk 32
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+    viewBinding {
+        enabled = true
+    }
+}
+
+dependencies {
+    def rxhttp_version = '2.9.0'
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation 'androidx.core:core-ktx:1.7.0'
+    implementation 'androidx.appcompat:appcompat:1.4.2'
+    implementation 'com.google.android.material:material:1.6.1'
+    //multidex 分包
+    implementation 'androidx.multidex:multidex:2.0.1'
+    //constraintlayout
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    //recyclerview
+    implementation 'androidx.recyclerview:recyclerview:1.2.1'
+    //生命周期
+    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+    //ViewModelScope
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1"
+    //LifecycleScope
+    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.5.1"
+    //kotlin协程
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4"
+    implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.6.4"
+    //RecyclerView 框架
+    implementation 'com.github.CymChad:BaseRecyclerViewAdapterHelper:3.0.7'
+    //帮助类
+    implementation 'com.blankj:utilcodex:1.31.0'
+    //XPopup 提示框
+    implementation 'com.github.li-xiaojun:XPopup:2.8.14'
+    //网络
+    implementation 'com.squareup.okhttp3:okhttp:4.10.0'
+    implementation "com.github.liujingxing.rxhttp:rxhttp:$rxhttp_version"
+    kapt "com.github.liujingxing.rxhttp:rxhttp-compiler:$rxhttp_version"
+    implementation "com.github.liujingxing.rxhttp:converter-fastjson:$rxhttp_version"
+
+}
