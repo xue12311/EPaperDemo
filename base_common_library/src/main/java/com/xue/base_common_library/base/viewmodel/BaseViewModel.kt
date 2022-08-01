@@ -2,6 +2,8 @@ package com.xue.base_common_library.base.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.blankj.utilcode.util.StringUtils
+import com.xue.base_common_library.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -73,7 +75,7 @@ open class BaseViewModel : ViewModel() {
      * @param message 提示语
      */
     fun setLoadingMessage(message: String?) {
-        _loading_dialog_message.value = message ?: "加载中..."
+        _loading_dialog_message.value = message ?: StringUtils.getString(R.string.text_loading_message)
     }
 
     /**
@@ -100,6 +102,7 @@ open class BaseViewModel : ViewModel() {
             block()
         }
     }
+
     /**
      * @param block     协程代码块，运行在UI线程
      * @param onError   异常回调，运行在UI线程
