@@ -6,6 +6,7 @@ import com.blankj.utilcode.util.StringUtils
 import com.xue.base_common_library.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 open class BaseViewModel : ViewModel() {
 
@@ -21,21 +22,21 @@ open class BaseViewModel : ViewModel() {
     /**
      * 当前 是否显示 加载中 提示框
      */
-    fun isShowLoadingDialog(): MutableStateFlow<Boolean> {
+    fun isShowLoadingDialog(): StateFlow<Boolean> {
         return _show_loading_dialog
     }
 
     /**
      * 当前 加载中 提示框 提示语
      */
-    fun getLoadingDialogMessage(): MutableStateFlow<String?> {
+    fun getLoadingDialogMessage(): StateFlow<String?> {
         return _loading_dialog_message
     }
 
     /**
      * Toast 提示音
      */
-    fun getToastMessage(): MutableStateFlow<String?> {
+    fun getToastMessage(): StateFlow<String?> {
         return _toast_message
     }
 
