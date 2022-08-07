@@ -1,2 +1,29 @@
 <resources>
+
+    <string name="esptouch2_title">EspTouch V2</string>
+    <string name="esptouch2_about_version">EspTouch V2 版本: %s</string>
+    <string name="esptouch2_ssid_label">SSID: </string>
+    <string name="esptouch2_bssid_label">BSSID: </string>
+    <string name="esptouch2_ip_label">IP: </string>
+    <string name="esptouch2_password_label">密码</string>
+    <string name="esptouch2_aes_key">AES 密钥</string>
+    <string name="esptouch2_aes_key_error">AES 密钥必须为空或者16字节数据</string>
+    <string name="esptouch2_custom_data">自定义数据</string>
+    <string name="esptouch2_custom_data_error">自定义数据不能超过%d字节</string>
+    <string name="esptouch2_device_count">需要配网的设备数量</string>
+
+    <string name="esptouch2_confirm">确认</string>
+    <string name="esptouch2_provisioning_title">配网</string>
+    <string name="esptouch2_provisioning_stop">停止</string>
+    <string name="esptouch2_provisioning_result_exception">捕获到错误：%s</string>
+    <string name="esptouch2_provisioning_result_none">没有找到设备</string>
+    <string name="esptouch2_provisioning_wifi_disconnect">Wi-Fi 连接已断开</string>
+    <string name="esptouch2_provisioning_result_bssid">BSSID: %1$s</string>
+    <string name="esptouch2_provisioning_result_address">地址: %1$s</string>
+    <string name="text_dialog_location_permission_title">需要位置权限</string>
+    <string name="text_dialog_location_permission_message">当前操作需要使用位置权限来获取 Wi-Fi 信息，不开启权限将无法使用此功能,请进行授权</string>
+    <string name="text_dialog_location_permission_message2">当前操作需要使用位置权限来获取 Wi-Fi 信息，不开启权限将无法使用此功能,请去设置界面进行授权</string>
+    <string name="text_dialog_permission_authorize">授权</string>
+    <string name="text_dialog_permission_setting">设置</string>
+    <string name="text_cancel">取消</string>
 </resources>

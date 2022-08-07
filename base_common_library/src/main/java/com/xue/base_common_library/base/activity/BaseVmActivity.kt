@@ -4,18 +4,14 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.ViewModelProviders
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.whenStarted
 import com.blankj.utilcode.util.StringUtils
 import com.blankj.utilcode.util.ToastUtils
 import com.lxj.xpopup.XPopup
 import com.xue.base_common_library.R
 import com.xue.base_common_library.base.viewmodel.BaseViewModel
 import com.xue.base_common_library.ext.getVmClazz
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.launch
+
 /**
  * 作者　: hegaojian
  * 时间　: 2019/12/12
@@ -54,6 +50,7 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
         } else {
             setContentView(layoutId())
         }
+        init(savedInstanceState)
     }
 
     private fun init(savedInstanceState: Bundle?) {
@@ -75,7 +72,7 @@ abstract class BaseVmActivity<VM : BaseViewModel> : AppCompatActivity() {
     /**
      * 创建LiveData数据观察者
      */
-    abstract fun createObserver()
+    open fun createObserver() {}
 
     /**
      * 注册UI 事件

@@ -28,7 +28,8 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
     private val mHandler = Handler(Looper.getMainLooper())
 
     private val mLoadingDialog by lazy {
-        XPopup.Builder(requireContext()).asLoading(StringUtils.getString(R.string.text_loading_message))
+        XPopup.Builder(requireContext())
+            .asLoading(StringUtils.getString(R.string.text_loading_message))
     }
 
     //是否第一次加载
@@ -126,7 +127,9 @@ abstract class BaseVmFragment<VM : BaseViewModel> : Fragment() {
     /**
      * 创建LiveData数据观察者
      */
-    abstract fun createObserver()
+    open fun createObserver() {
+
+    }
 
     /**
      * 注册UI 事件

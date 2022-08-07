@@ -124,7 +124,7 @@ abstract class BaseAvmFragment<AVM : BaseViewModel> : Fragment() {
     /**
      * 创建LiveData数据观察者
      */
-    abstract fun createObserver()
+    open fun createObserver(){}
 
     /**
      * 注册UI 事件

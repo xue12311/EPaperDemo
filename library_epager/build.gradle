@@ -4,6 +4,12 @@ plugins {
     id 'kotlin-kapt'
 }
 
+kapt {
+    arguments {
+        arg("AROUTER_MODULE_NAME", project.getName())
+    }
+}
+
 android {
     compileSdk 32
 
@@ -12,8 +18,8 @@ android {
         targetSdk 32
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
     }
 
     buildTypes {
@@ -41,7 +47,18 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.4.2'
     implementation 'com.google.android.material:material:1.6.1'
 
-    implementation project(path: ':base_common_library')
+    api project(path: ':base_common_library')
+
+
+    //esp8266 配网
+    implementation 'com.github.EspressifApp:lib-esptouch-v2-android:2.2.1'
+
+    api 'com.github.lygttpod:SuperTextView:2.4.6'
+
+    //阿里 Arouter
+    implementation 'com.alibaba:arouter-api:1.5.2'
+    kapt 'com.alibaba:arouter-compiler:1.5.2'
+
     //网络
     implementation 'com.squareup.okhttp3:okhttp:4.10.0'
     implementation "com.github.liujingxing.rxhttp:rxhttp:$rxhttp_version"
