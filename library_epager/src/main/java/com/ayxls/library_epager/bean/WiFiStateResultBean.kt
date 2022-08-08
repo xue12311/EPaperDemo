@@ -9,6 +9,9 @@ data class WiFiStateResultBean(
     var message: CharSequence? = null,
     var is_wifi_enable: Boolean = true,
     var permission_granted: Boolean = false,
+    /**
+     * wifi 是否已连接
+     */
     var wifi_connected: Boolean = false,
     var is5G: Boolean = false,
     var wifi_ip_address: InetAddresses? = null,

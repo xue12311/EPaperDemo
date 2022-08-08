@@ -16,4 +16,12 @@ class EspTouch2ViewModel : BaseViewModel() {
      * wifi 定位权限
      */
     fun getAccessFineLocationPermission() = Manifest.permission.ACCESS_FINE_LOCATION
+
+
+    /**
+     * 更新 wifi 信息
+     */
+    private fun onUpdateWifiData() {
+        wifi_result.wifi_connected = false
+    }
 }

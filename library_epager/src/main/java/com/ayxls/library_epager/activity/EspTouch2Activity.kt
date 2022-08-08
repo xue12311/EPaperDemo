@@ -38,6 +38,33 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
         onCheckLocationPermission()
     }
 
+    private fun getWifiMessage(){
+
+    }
+
+//---------------------    申请权限     -------------------------------------------------------------------------------
+
+    /**
+     * 权限申请成功
+     */
+    private fun onLocationPermissionGranted() {
+        showToastMessage("获取权限成功")
+    }
+
+    /**
+     * 被拒绝且未勾选不再询问
+     */
+    private fun onLocationPermissionDenied() {
+        showToastMessage("获取权限失败")
+    }
+
+    /**
+     * 被拒绝且勾选不再询问
+     */
+    private fun onLocationPermissionExplained() {
+        showToastMessage("获取权限失败 不再询问")
+    }
+
     /**
      * 申请权限
      */
@@ -57,7 +84,6 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
             onLocationPermissionGranted()
         }
     }
-
 
     private val requestLocationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
@@ -80,27 +106,6 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
                 }
             }
         }
-
-    /**
-     * 权限申请成功
-     */
-    private fun onLocationPermissionGranted() {
-        showToastMessage("获取权限成功")
-    }
-
-    /**
-     * 被拒绝且未勾选不再询问
-     */
-    private fun onLocationPermissionDenied() {
-        showToastMessage("获取权限失败")
-    }
-
-    /**
-     * 被拒绝且勾选不再询问
-     */
-    private fun onLocationPermissionExplained() {
-        showToastMessage("获取权限失败 不再询问")
-    }
 
     /**
      * 位置权限 提示框 - 未勾选不再询问
