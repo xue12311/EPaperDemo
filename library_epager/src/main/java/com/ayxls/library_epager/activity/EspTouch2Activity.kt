@@ -10,18 +10,19 @@ import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
-import androidx.core.content.getSystemService
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.ayxls.library_epager.R
 import com.ayxls.library_epager.constant.ARouterConstants
 import com.ayxls.library_epager.databinding.ActivityEsptouch2Binding
 import com.ayxls.library_epager.ext.showPermissionDialog
 import com.ayxls.library_epager.viewmodel.EspTouch2ViewModel
-import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.PermissionUtils
+import com.blankj.utilcode.util.StringUtils
+import com.espressif.iot.esptouch2.provision.TouchNetUtil
 import com.xue.base_common_library.base.activity.BaseVmVbActivity
 
 @Route(path = ARouterConstants.ARouterActivityEspTouch2)
@@ -44,6 +45,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
     }
 
     override fun createObserver() {
@@ -60,6 +62,38 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
         onCheckLocationPermission()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_library_epager_esp_touch2, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId) {
+            //返回按钮
+            android.R.id.home -> {
+                finish()
+                return true
+            }
+            //切换wifi
+            R.id.menu_wifi_toggle -> {
+                //onToggleWifi()
+                return true
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    /**
+     * 更新布局信息
+     */
+    private fun onUpDateWiFiStatusUI() {
+        val result = mViewModel.getWiFiResult()
+        mViewBinding.tvApSsidText.setText(StringUtils.null2Length0(result.wifi_ssid))
+        mViewBinding.tvApBssidText.setText(StringUtils.null2Length0(result.wifi_bssid))
+        mViewBinding.tvIpText.setText(StringUtils.null2Length0(result.wifi_ip_address?.hostAddress))
+        mViewBinding.tvMessage.setText(StringUtils.null2Length0(result.message))
+    }
+
 
     //---------------------    获取wifi信息     -------------------------------------------------------------------------------
 
@@ -72,6 +106,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
             mConnectivityManager.requestNetwork(mNetworkRequest, mNetworkCallback)
         } else {
             setWifiInfoData(mWifiManager.connectionInfo)
+            onUpDateWiFiStatusUI()
         }
     }
 
@@ -79,9 +114,42 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
      * 获取wifi信息
      */
     private fun setWifiInfoData(wifiInfo: WifiInfo) {
-        LogUtils.e("wifiInfo.ssid = ${wifiInfo.ssid}")
-        LogUtils.e("wifiInfo.bssid = ${wifiInfo.bssid}")
-        LogUtils.e("wifiInfo.ipAddress = ${wifiInfo.ipAddress}")
+        val result = mViewModel.getWiFiResult()
+        result.wifi_connected = isWifiConnected(wifiInfo)
+        if (!result.wifi_connected) {
+            result.message = getString(R.string.esptouch_message_wifi_connection)
+            return
+        }
+        result.is5G = TouchNetUtil.is5G(wifiInfo.frequency)
+        if (result.is5G) {
+            result.message = getString(R.string.esptouch_message_wifi_frequency)
+            return
+        }
+
+        result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
+
+        result.wifi_ssid_bytes = TouchNetUtil.getRawSsidBytes(wifiInfo)
+
+        result.wifi_bssid = wifiInfo.bssid
+
+        if (wifiInfo.ipAddress != 0) {
+            result.wifi_ip_address = TouchNetUtil.getAddress(wifiInfo.ipAddress)
+        } else {
+            result.wifi_ip_address = TouchNetUtil.getIPv4Address()
+            if (result.wifi_ip_address == null) {
+                result.wifi_ip_address = TouchNetUtil.getIPv6Address()
+            }
+        }
+        result.is_wifi_enable = result.wifi_connected
+    }
+
+    /**
+     * 判断 wifi 是否已经连接
+     * @param wifi
+     * @return true 已连接 false 未连接
+     */
+    private fun isWifiConnected(wifi: WifiInfo?): Boolean {
+        return wifi != null && wifi.networkId != -1 && !"<unknown ssid>".equals(wifi.ssid)
     }
 
     private val mNetworkCallback: ConnectivityManager.NetworkCallback? =
@@ -91,6 +159,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
                     super.onCapabilitiesChanged(network, networkCapabilities)
                     val wifiInfo = networkCapabilities.transportInfo as WifiInfo
                     setWifiInfoData(wifiInfo)
+                    onUpDateWiFiStatusUI()
                 }
             }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -99,6 +168,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
                     super.onCapabilitiesChanged(network, networkCapabilities)
                     val wifiInfo = networkCapabilities.transportInfo as WifiInfo
                     setWifiInfoData(wifiInfo)
+                    onUpDateWiFiStatusUI()
                 }
             }
         } else {

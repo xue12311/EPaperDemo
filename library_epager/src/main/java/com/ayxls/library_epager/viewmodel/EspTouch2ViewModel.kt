@@ -9,7 +9,7 @@ import com.xue.base_common_library.base.viewmodel.BaseViewModel
  */
 class EspTouch2ViewModel : BaseViewModel() {
 
-    val wifi_result by lazy { WiFiStateResultBean() }
+    private val wifi_result by lazy { WiFiStateResultBean() }
 
 
     /**
@@ -18,10 +18,7 @@ class EspTouch2ViewModel : BaseViewModel() {
     fun getAccessFineLocationPermission() = Manifest.permission.ACCESS_FINE_LOCATION
 
 
-    /**
-     * 更新 wifi 信息
-     */
-    private fun onUpdateWifiData() {
-        wifi_result.wifi_connected = false
-    }
+    fun getWiFiResult() = wifi_result
+
+
 }

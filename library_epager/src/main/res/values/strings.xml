@@ -1,7 +1,7 @@
 <resources>
+    <string name="esptouch_message_wifi_connection">请先连上 Wi-Fi</string>
+    <string name="esptouch_message_wifi_frequency">当前连接的是 5GHz Wi-Fi, 请先切换为 2.4GHz Wi-Fi。</string>
 
-    <string name="esptouch2_title">EspTouch V2</string>
-    <string name="esptouch2_about_version">EspTouch V2 版本: %s</string>
     <string name="esptouch2_ssid_label">SSID: </string>
     <string name="esptouch2_bssid_label">BSSID: </string>
     <string name="esptouch2_ip_label">IP: </string>
@@ -26,4 +26,5 @@
     <string name="text_dialog_permission_authorize">授权</string>
     <string name="text_dialog_permission_setting">设置</string>
     <string name="text_cancel">取消</string>
+    <string name="text_wifi_toggle">切换WiFi</string>
 </resources>
