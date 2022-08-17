@@ -113,34 +113,37 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
     /**
      * 获取wifi信息
      */
-    private fun setWifiInfoData(wifiInfo: WifiInfo) {
+    private fun setWifiInfoData(wifiInfo: WifiInfo?) {
         val result = mViewModel.getWiFiResult()
         result.wifi_connected = isWifiConnected(wifiInfo)
         if (!result.wifi_connected) {
             result.message = getString(R.string.esptouch_message_wifi_connection)
-            return
         }
-        result.is5G = TouchNetUtil.is5G(wifiInfo.frequency)
+        result.is5G = if (wifiInfo == null || !result.wifi_connected) false else TouchNetUtil.is5G(wifiInfo.frequency)
         if (result.is5G) {
             result.message = getString(R.string.esptouch_message_wifi_frequency)
-            return
         }
-
-        result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
-
-        result.wifi_ssid_bytes = TouchNetUtil.getRawSsidBytes(wifiInfo)
-
-        result.wifi_bssid = wifiInfo.bssid
-
-        if (wifiInfo.ipAddress != 0) {
-            result.wifi_ip_address = TouchNetUtil.getAddress(wifiInfo.ipAddress)
+        if (wifiInfo == null || !result.wifi_connected) {
+            result.wifi_ssid = null
+            result.wifi_ssid_bytes = null
+            result.wifi_bssid = null
+            result.wifi_ip_address = null
         } else {
-            result.wifi_ip_address = TouchNetUtil.getIPv4Address()
-            if (result.wifi_ip_address == null) {
-                result.wifi_ip_address = TouchNetUtil.getIPv6Address()
+            result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
+
+            result.wifi_ssid_bytes = TouchNetUtil.getRawSsidBytes(wifiInfo)
+
+            result.wifi_bssid = wifiInfo.bssid
+
+            if (wifiInfo.ipAddress != 0) {
+                result.wifi_ip_address = TouchNetUtil.getAddress(wifiInfo.ipAddress)
+            } else {
+                result.wifi_ip_address = TouchNetUtil.getIPv4Address()
+                if (result.wifi_ip_address == null) {
+                    result.wifi_ip_address = TouchNetUtil.getIPv6Address()
+                }
             }
         }
-        result.is_wifi_enable = result.wifi_connected
     }
 
     /**
@@ -157,7 +160,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
             object : ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
                 override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
                     super.onCapabilitiesChanged(network, networkCapabilities)
-                    val wifiInfo = networkCapabilities.transportInfo as WifiInfo
+                    val wifiInfo = networkCapabilities.transportInfo as WifiInfo?
                     setWifiInfoData(wifiInfo)
                     onUpDateWiFiStatusUI()
                 }
@@ -166,7 +169,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
             object : ConnectivityManager.NetworkCallback() {
                 override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
                     super.onCapabilitiesChanged(network, networkCapabilities)
-                    val wifiInfo = networkCapabilities.transportInfo as WifiInfo
+                    val wifiInfo = networkCapabilities.transportInfo as WifiInfo?
                     setWifiInfoData(wifiInfo)
                     onUpDateWiFiStatusUI()
                 }
