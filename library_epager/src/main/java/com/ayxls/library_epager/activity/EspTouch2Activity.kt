@@ -22,6 +22,8 @@ import com.ayxls.library_epager.ext.showPermissionDialog
 import com.ayxls.library_epager.viewmodel.EspTouch2ViewModel
 import com.blankj.utilcode.util.PermissionUtils
 import com.blankj.utilcode.util.StringUtils
+import com.blankj.utilcode.util.Utils
+import com.espressif.iot.esptouch2.provision.EspProvisioningRequest
 import com.espressif.iot.esptouch2.provision.TouchNetUtil
 import com.xue.base_common_library.base.activity.BaseVmVbActivity
 
@@ -92,6 +94,27 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
         mViewBinding.tvApBssidText.setText(StringUtils.null2Length0(result.wifi_bssid))
         mViewBinding.tvIpText.setText(StringUtils.null2Length0(result.wifi_ip_address?.hostAddress))
         mViewBinding.tvMessage.setText(StringUtils.null2Length0(result.message))
+    }
+
+
+    //---------------------    传递wifi信息到esp8266开发版     -------------------------------------------------------------------------------
+
+    /**
+     * 启用 wifi 配置
+     */
+    private fun launchWiFiProvisioning(){
+
+    }
+
+    private fun getEspProvisioningRequest(): EspProvisioningRequest {
+        val result = mViewModel.getWiFiResult()
+        return EspProvisioningRequest.Builder(Utils.getApp().applicationContext)
+            .setSSID(result.wifi_ssid_bytes)
+            .setBSSID(TouchNetUtil.convertBssid2Bytes(result.wifi_bssid))
+            .setPassword(result.wifi_password?.toByteArray())
+            .setAESKey(result.wifi_aes_key?.toByteArray())
+            .setReservedData(result.reserved_custom_data)
+            .build()
     }
 
 
