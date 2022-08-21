@@ -52,6 +52,7 @@ dependencies {
 
     //esp8266 配网
     implementation 'com.github.EspressifApp:lib-esptouch-v2-android:2.2.1'
+    implementation 'com.github.EspressifApp:lib-esptouch-android:1.1.1'
 
     api 'com.github.lygttpod:SuperTextView:2.4.6'
 

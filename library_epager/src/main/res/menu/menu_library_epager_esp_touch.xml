@@ -2,7 +2,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
       xmlns:tools="http://schemas.android.com/tools"
       xmlns:app="http://schemas.android.com/apk/res-auto"
-      tools:context=".activity.EspTouch2Activity">
+      tools:context=".activity.EspTouchActivity">
     <item android:id="@+id/menu_wifi_toggle"
           android:title="@string/text_wifi_toggle"
           android:icon="@drawable/icon_baseline_wifi_24_white"

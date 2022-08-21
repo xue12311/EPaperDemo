@@ -5,12 +5,14 @@
     <string name="esptouch2_ssid_label">SSID: </string>
     <string name="esptouch2_bssid_label">BSSID: </string>
     <string name="esptouch2_ip_label">IP: </string>
-    <string name="esptouch2_password_label">密码</string>
+    <string name="esptouch2_password_label">WiFi密码</string>
+    <string name="esptouch2_password_label_hint">请输入WiFi密码</string>
     <string name="esptouch2_aes_key">AES 密钥</string>
     <string name="esptouch2_aes_key_error">AES 密钥必须为空或者16字节数据</string>
     <string name="esptouch2_custom_data">自定义数据</string>
     <string name="esptouch2_custom_data_error">自定义数据不能超过%d字节</string>
     <string name="esptouch2_device_count">需要配网的设备数量</string>
+    <string name="esptouch2_device_count_label_hint">请输入需要配网的设备数量</string>
 
     <string name="esptouch2_confirm">确认</string>
     <string name="esptouch2_provisioning_title">配网</string>
@@ -27,4 +29,5 @@
     <string name="text_dialog_permission_setting">设置</string>
     <string name="text_cancel">取消</string>
     <string name="text_wifi_toggle">切换WiFi</string>
+    <string name="text_not_authorize_please_authorize_first">暂无权限,请先进行授权</string>
 </resources>

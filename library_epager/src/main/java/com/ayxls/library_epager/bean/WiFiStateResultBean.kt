@@ -7,17 +7,34 @@ import java.net.InetAddress
  */
 data class WiFiStateResultBean(
     var message: String? = null,
-    var is_wifi_enable: Boolean = true,
+
+    /**
+     * 是否已经授权
+     */
     var permission_granted: Boolean = false,
     /**
      * wifi 是否已连接
      */
     var wifi_connected: Boolean = false,
+    /**
+     * 是否为 5G wifi
+     */
     var is5G: Boolean = false,
+    /**
+     * wifi ip 地址
+     */
     var wifi_ip_address: InetAddress? = null,
-    var wifi_ssid: String? = null,
+    /**
+     * BSSID地址
+     */
     var wifi_bssid: String? = null,
-    var wifi_rssi: Int = 0,
+    /**
+     * wifi名称 (字符串)
+     */
+    var wifi_ssid: String? = null,
+    /**
+     * wifi名称 (byte 数组)
+     */
     var wifi_ssid_bytes: ByteArray? = null,
 
     /**
@@ -26,12 +43,22 @@ data class WiFiStateResultBean(
     var wifi_password: String? = null,
 
     /**
-     * AES 密钥
+     * 所需连接设备数量
      */
-    var wifi_aes_key: String? = null,
+    var device_count: Int = 0,
+) {
 
     /**
-     * 传递 自定义参数
+     * 清除 WiFi 数据
      */
-    var reserved_custom_data: ByteArray? = null,
-)
+    fun onClearWiFiData() {
+        wifi_connected = false
+        is5G = false
+        wifi_ip_address = null
+        wifi_bssid = null
+        wifi_ssid = null
+        wifi_ssid_bytes = null
+        wifi_password = null
+        device_count = 0
+    }
+}

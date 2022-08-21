@@ -7,7 +7,7 @@ import com.xue.base_common_library.base.viewmodel.BaseViewModel
 /**
  * esp 配网
  */
-class EspTouch2ViewModel : BaseViewModel() {
+class EspTouchViewModel : BaseViewModel() {
 
     private val wifi_result by lazy { WiFiStateResultBean() }
 

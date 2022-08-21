@@ -1,53 +1,59 @@
 package com.ayxls.library_epager.activity
 
-import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.ConnectivityManager
-import android.net.Network
-import android.net.NetworkCapabilities
-import android.net.NetworkRequest
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.ayxls.library_epager.R
 import com.ayxls.library_epager.constant.ARouterConstants
-import com.ayxls.library_epager.databinding.ActivityEsptouch2Binding
+import com.ayxls.library_epager.databinding.ActivityEsptouchBinding
 import com.ayxls.library_epager.ext.showPermissionDialog
-import com.ayxls.library_epager.viewmodel.EspTouch2ViewModel
+import com.ayxls.library_epager.ext.toDefaultInt
+import com.ayxls.library_epager.viewmodel.EspTouchViewModel
+import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.PermissionUtils
 import com.blankj.utilcode.util.StringUtils
-import com.blankj.utilcode.util.Utils
-import com.espressif.iot.esptouch2.provision.EspProvisioningRequest
 import com.espressif.iot.esptouch2.provision.TouchNetUtil
 import com.xue.base_common_library.base.activity.BaseVmVbActivity
 
 @Route(path = ARouterConstants.ARouterActivityEspTouch2)
-class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2Binding>() {
+class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBinding>() {
+    /**
+     * 密码输入框
+     */
+    private val mEtWifiPassword by lazy { mViewBinding.editApPassword }
+
+    /**
+     * 设备数量输入框
+     */
+    private val mEtDeviceCount by lazy { mViewBinding.editDeviceCount }
+
     //wifi 管理器
     private val mWifiManager by lazy { applicationContext.getSystemService(WIFI_SERVICE) as WifiManager }
-    private val mConnectivityManager by lazy {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            (getSystemService(ConnectivityManager::class.java)) as ConnectivityManager
-        } else {
-            (getSystemService(Context.CONNECTIVITY_SERVICE)) as ConnectivityManager
-        }
-    }
-    private val mNetworkRequest by lazy {
-        NetworkRequest
-            .Builder()
-            .addTransportType(NetworkCapabilities.TRANSPORT_WIFI)
-            .build()
-    }
+
+    //界面跳转
+    private var mActivityLauncher: ActivityResultLauncher<Intent>? = null
+
+    //确认按钮
+    private val mButConfirm by lazy { mViewBinding.btnConfirm }
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)
+        //左侧添加 返回键
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        mActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult(), {
+            setActivityResultCallback(it)
+        })
     }
 
     override fun createObserver() {
@@ -56,6 +62,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
 
     override fun initListener() {
         super.initListener()
+        ClickUtils.applySingleDebouncing(arrayOf(mButConfirm), mClickListener)
     }
 
     override fun initData() {
@@ -65,7 +72,7 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_library_epager_esp_touch2, menu)
+        menuInflater.inflate(R.menu.menu_library_epager_esp_touch, menu)
         return super.onCreateOptionsMenu(menu)
     }
 
@@ -85,6 +92,25 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
         return super.onOptionsItemSelected(item)
     }
 
+    private val mClickListener = object : View.OnClickListener {
+        override fun onClick(view: View?) {
+            when (view?.id) {
+                //确认按钮
+                mButConfirm.id -> {
+                    launchWiFiProvisioning()
+                }
+            }
+
+        }
+    }
+
+    /**
+     * Activity 回调
+     */
+    private fun setActivityResultCallback(mActivityResult: ActivityResult) {
+
+    }
+
     /**
      * 更新布局信息
      */
@@ -93,7 +119,6 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
         mViewBinding.tvApSsidText.setText(StringUtils.null2Length0(result.wifi_ssid))
         mViewBinding.tvApBssidText.setText(StringUtils.null2Length0(result.wifi_bssid))
         mViewBinding.tvIpText.setText(StringUtils.null2Length0(result.wifi_ip_address?.hostAddress))
-        mViewBinding.tvMessage.setText(StringUtils.null2Length0(result.message))
     }
 
 
@@ -102,21 +127,22 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
     /**
      * 启用 wifi 配置
      */
-    private fun launchWiFiProvisioning(){
-
-    }
-
-    private fun getEspProvisioningRequest(): EspProvisioningRequest {
+    private fun launchWiFiProvisioning() {
         val result = mViewModel.getWiFiResult()
-        return EspProvisioningRequest.Builder(Utils.getApp().applicationContext)
-            .setSSID(result.wifi_ssid_bytes)
-            .setBSSID(TouchNetUtil.convertBssid2Bytes(result.wifi_bssid))
-            .setPassword(result.wifi_password?.toByteArray())
-            .setAESKey(result.wifi_aes_key?.toByteArray())
-            .setReservedData(result.reserved_custom_data)
-            .build()
+        if (!result.permission_granted) {
+            //获取权限
+            onCheckLocationPermission()
+        } else if (!result.wifi_connected || result.is5G) {
+            showToastMessage(result.message)
+        } else if (StringUtils.isTrimEmpty(mEtWifiPassword.text.toString())) {
+            showToastMessage(StringUtils.getString(R.string.esptouch2_password_label_hint))
+        } else if (StringUtils.isTrimEmpty(mEtDeviceCount.text.toString())) {
+            showToastMessage(StringUtils.getString(R.string.esptouch2_device_count_label_hint))
+        } else {
+            result.wifi_password = StringUtils.null2Length0(mEtWifiPassword.text.toString())
+            result.device_count = StringUtils.null2Length0(mEtDeviceCount.text.toString()).toDefaultInt()
+        }
     }
-
 
     //---------------------    获取wifi信息     -------------------------------------------------------------------------------
 
@@ -125,46 +151,39 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
      * 获取 wifi信息
      */
     private fun getCurrentWifiInfo() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && mNetworkCallback != null) {
-            mConnectivityManager.requestNetwork(mNetworkRequest, mNetworkCallback)
-        } else {
-            setWifiInfoData(mWifiManager.connectionInfo)
-            onUpDateWiFiStatusUI()
-        }
+        setWifiInfoData(mWifiManager.connectionInfo)
+        onUpDateWiFiStatusUI()
     }
 
     /**
      * 获取wifi信息
      */
-    private fun setWifiInfoData(wifiInfo: WifiInfo?) {
+    private fun setWifiInfoData(wifiInfo: WifiInfo) {
         val result = mViewModel.getWiFiResult()
+        result.onClearWiFiData()
         result.wifi_connected = isWifiConnected(wifiInfo)
         if (!result.wifi_connected) {
             result.message = getString(R.string.esptouch_message_wifi_connection)
+            return
         }
-        result.is5G = if (wifiInfo == null || !result.wifi_connected) false else TouchNetUtil.is5G(wifiInfo.frequency)
+        result.is5G = TouchNetUtil.is5G(wifiInfo.frequency)
         if (result.is5G) {
             result.message = getString(R.string.esptouch_message_wifi_frequency)
+            return
         }
-        if (wifiInfo == null || !result.wifi_connected) {
-            result.wifi_ssid = null
-            result.wifi_ssid_bytes = null
-            result.wifi_bssid = null
-            result.wifi_ip_address = null
+
+        result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
+
+        result.wifi_ssid_bytes = TouchNetUtil.getRawSsidBytes(wifiInfo)
+
+        result.wifi_bssid = wifiInfo.bssid
+
+        if (wifiInfo.ipAddress != 0) {
+            result.wifi_ip_address = TouchNetUtil.getAddress(wifiInfo.ipAddress)
         } else {
-            result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
-
-            result.wifi_ssid_bytes = TouchNetUtil.getRawSsidBytes(wifiInfo)
-
-            result.wifi_bssid = wifiInfo.bssid
-
-            if (wifiInfo.ipAddress != 0) {
-                result.wifi_ip_address = TouchNetUtil.getAddress(wifiInfo.ipAddress)
-            } else {
-                result.wifi_ip_address = TouchNetUtil.getIPv4Address()
-                if (result.wifi_ip_address == null) {
-                    result.wifi_ip_address = TouchNetUtil.getIPv6Address()
-                }
+            result.wifi_ip_address = TouchNetUtil.getIPv4Address()
+            if (result.wifi_ip_address == null) {
+                result.wifi_ip_address = TouchNetUtil.getIPv6Address()
             }
         }
     }
@@ -178,44 +197,13 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
         return wifi != null && wifi.networkId != -1 && !"<unknown ssid>".equals(wifi.ssid)
     }
 
-    private val mNetworkCallback: ConnectivityManager.NetworkCallback? =
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            object : ConnectivityManager.NetworkCallback(FLAG_INCLUDE_LOCATION_INFO) {
-                override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                    super.onCapabilitiesChanged(network, networkCapabilities)
-                    val wifiInfo = networkCapabilities.transportInfo as WifiInfo?
-                    setWifiInfoData(wifiInfo)
-                    onUpDateWiFiStatusUI()
-                }
-            }
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            object : ConnectivityManager.NetworkCallback() {
-                override fun onCapabilitiesChanged(network: Network, networkCapabilities: NetworkCapabilities) {
-                    super.onCapabilitiesChanged(network, networkCapabilities)
-                    val wifiInfo = networkCapabilities.transportInfo as WifiInfo?
-                    setWifiInfoData(wifiInfo)
-                    onUpDateWiFiStatusUI()
-                }
-            }
-        } else {
-            null
-        }
-
-    fun unregisterNetWork() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            mConnectivityManager.bindProcessToNetwork(null)
-        }
-        if (mNetworkCallback != null) {
-            mConnectivityManager.unregisterNetworkCallback(mNetworkCallback)
-        }
-    }
 //---------------------    申请权限     -------------------------------------------------------------------------------
 
     /**
      * 权限申请成功
      */
     private fun onLocationPermissionGranted() {
-        showToastMessage("获取权限成功")
+        mViewModel.getWiFiResult().permission_granted = true
         getCurrentWifiInfo()
     }
 
@@ -224,6 +212,8 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
      */
     private fun onLocationPermissionDenied() {
         showToastMessage("获取权限失败")
+        mViewModel.getWiFiResult().message = StringUtils.getString(R.string.text_not_authorize_please_authorize_first)
+        mViewModel.getWiFiResult().permission_granted = false
     }
 
     /**
@@ -231,6 +221,8 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
      */
     private fun onLocationPermissionExplained() {
         showToastMessage("获取权限失败 不再询问")
+        mViewModel.getWiFiResult().message = StringUtils.getString(R.string.text_not_authorize_please_authorize_first)
+        mViewModel.getWiFiResult().permission_granted = false
     }
 
     /**
@@ -261,7 +253,8 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
             } else { //权限获取失败
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     //是否已经勾选 禁止后不再询问
-                    val isDenied = shouldShowRequestPermissionRationale(mViewModel.getAccessFineLocationPermission())
+                    val isDenied =
+                        shouldShowRequestPermissionRationale(mViewModel.getAccessFineLocationPermission())
                     if (isDenied) {
                         //被拒接 且 没勾选不再询问
                         showLocationPermissionDialog()
@@ -302,10 +295,5 @@ class EspTouch2Activity : BaseVmVbActivity<EspTouch2ViewModel, ActivityEsptouch2
             }, {
                 onLocationPermissionExplained()
             })
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        unregisterNetWork()
     }
 }
