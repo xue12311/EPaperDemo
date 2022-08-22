@@ -99,6 +99,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
+            android:visibility="gone"
             android:hint="@string/esptouch2_device_count"
             app:layout_constraintTop_toBottomOf="@id/layout_ap_password">
 
@@ -110,16 +111,6 @@
                 android:text="1"
                 android:singleLine="true"/>
     </com.google.android.material.textfield.TextInputLayout>
-
-    <TextView
-            android:id="@+id/tv_hint"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:gravity="top"
-            android:textColor="@android:color/holo_red_dark"
-            app:layout_constraintTop_toBottomOf="@id/layout_device_count"
-            app:layout_goneMarginStart="4dp"/>
 
     <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_confirm"

@@ -23,6 +23,10 @@ import com.ayxls.library_epager.viewmodel.EspTouchViewModel
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.PermissionUtils
 import com.blankj.utilcode.util.StringUtils
+import com.espressif.iot.esptouch.EsptouchTask
+import com.espressif.iot.esptouch.IEsptouchListener
+import com.espressif.iot.esptouch.IEsptouchResult
+import com.espressif.iot.esptouch.util.ByteUtil
 import com.espressif.iot.esptouch2.provision.TouchNetUtil
 import com.xue.base_common_library.base.activity.BaseVmVbActivity
 
@@ -46,6 +50,11 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
 
     //确认按钮
     private val mButConfirm by lazy { mViewBinding.btnConfirm }
+
+
+    //esp wifi 配网
+    private var mEsptouchTask: EsptouchTask? = null
+
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)
@@ -122,6 +131,60 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
     }
 
 
+    //---------------------    esp wifi 配网     -------------------------------------------------------------------------------
+
+
+    /**
+     * 开始配网
+     */
+    private fun onStartEsptouchTask() {
+        if (mEsptouchTask != null) {
+            mEsptouchTask?.interrupt()
+            mEsptouchTask = null
+        }
+        //初始化 EsptouchTask
+        initEsptouchTask()
+        //开始配网
+        mViewModel.onStartEsptouchTask(mEsptouchTask, {
+
+        }, {
+
+        })
+    }
+
+
+    /**
+     * 初始化 EsptouchTask
+     */
+    private fun initEsptouchTask() {
+        if (mEsptouchTask == null) {
+            val wifi_result = mViewModel.getWiFiResult()
+            //wifi 名称
+            val ssid = ByteUtil.getBytesByString(StringUtils.null2Length0(wifi_result.wifi_ssid))
+            //wifi 密码
+            val password = ByteUtil.getBytesByString(StringUtils.null2Length0(wifi_result.wifi_password))
+            //BSSID地址
+            val bssid = TouchNetUtil.convertBssid2Bytes(StringUtils.null2Length0(wifi_result.wifi_bssid))
+            mEsptouchTask = EsptouchTask(ssid, bssid, password, this)
+            //发送方式 true 为 广播，false 为 组播
+            mEsptouchTask?.setPackageBroadcast(mViewModel.isBroadcastConnect)
+            //设置 响应回调
+            mEsptouchTask?.setEsptouchListener(object : IEsptouchListener {
+                override fun onEsptouchResultAdded(result: IEsptouchResult?) {
+                    if (result != null && !result.isCancelled) {
+                        //配网成功
+                        if (result.isSuc) {
+                            showToastMessage("onEsptouchResultAdded 配网成功")
+                            return
+                        }
+                    }
+                    showToastMessage("onEsptouchResultAdded 配网失败")
+                }
+            })
+        }
+    }
+
+
     //---------------------    传递wifi信息到esp8266开发版     -------------------------------------------------------------------------------
 
     /**
@@ -141,6 +204,8 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         } else {
             result.wifi_password = StringUtils.null2Length0(mEtWifiPassword.text.toString())
             result.device_count = StringUtils.null2Length0(mEtDeviceCount.text.toString()).toDefaultInt()
+            //开始配网
+            onStartEsptouchTask()
         }
     }
 
@@ -173,8 +238,6 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         }
 
         result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
-
-        result.wifi_ssid_bytes = TouchNetUtil.getRawSsidBytes(wifiInfo)
 
         result.wifi_bssid = wifiInfo.bssid
 
