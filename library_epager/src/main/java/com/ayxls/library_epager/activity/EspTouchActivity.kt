@@ -1,5 +1,6 @@
 package com.ayxls.library_epager.activity
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.wifi.WifiInfo
@@ -12,6 +13,7 @@ import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.ayxls.library_epager.R
@@ -20,9 +22,7 @@ import com.ayxls.library_epager.databinding.ActivityEsptouchBinding
 import com.ayxls.library_epager.ext.showPermissionDialog
 import com.ayxls.library_epager.ext.toDefaultInt
 import com.ayxls.library_epager.viewmodel.EspTouchViewModel
-import com.blankj.utilcode.util.ClickUtils
-import com.blankj.utilcode.util.PermissionUtils
-import com.blankj.utilcode.util.StringUtils
+import com.blankj.utilcode.util.*
 import com.espressif.iot.esptouch.EsptouchTask
 import com.espressif.iot.esptouch.IEsptouchListener
 import com.espressif.iot.esptouch.IEsptouchResult
@@ -80,21 +80,11 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         onCheckLocationPermission()
     }
 
-    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
-        menuInflater.inflate(R.menu.menu_library_epager_esp_touch, menu)
-        return super.onCreateOptionsMenu(menu)
-    }
-
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             //返回按钮
             android.R.id.home -> {
                 finish()
-                return true
-            }
-            //切换wifi
-            R.id.menu_wifi_toggle -> {
-                //onToggleWifi()
                 return true
             }
         }
@@ -184,6 +174,52 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         }
     }
 
+    //---------------------    wifi状态监听    -------------------------------------------------------------------------------
+
+    /**
+     * 注册网络状态改变监听
+     */
+    private fun registerNetworkStatusChangedListener() {
+        //判断是否注册网络状态改变监听器
+        if (!NetworkUtils.isRegisteredNetworkStatusChangedListener(mNetworkStatusChangedListener)) {
+            //注册网络状态改变监听器
+            NetworkUtils.registerNetworkStatusChangedListener(mNetworkStatusChangedListener)
+        }
+
+    }
+
+    /**
+     * 注销网络状态改变监听
+     */
+    private fun unregisterNetworkStatusChangedListener() {
+        //判断是否注册网络状态改变监听器
+        if (NetworkUtils.isRegisteredNetworkStatusChangedListener(mNetworkStatusChangedListener)) {
+            //注销网络状态改变监听器
+            NetworkUtils.unregisterNetworkStatusChangedListener(mNetworkStatusChangedListener)
+        }
+    }
+
+    private val mNetworkStatusChangedListener = object : NetworkUtils.OnNetworkStatusChangedListener {
+        override fun onDisconnected() {
+            onDisconnectWiFi()
+        }
+
+        override fun onConnected(networkType: NetworkUtils.NetworkType?) {
+            if (networkType != null && networkType == NetworkUtils.NetworkType.NETWORK_WIFI) {
+                getCurrentWifiInfo()
+            } else {
+                onDisconnectWiFi()
+            }
+        }
+    }
+
+    /**
+     * wifi 已断开
+     */
+    private fun onDisconnectWiFi() {
+        setWifiInfoData(null)
+        onUpDateWiFiStatusUI()
+    }
 
     //---------------------    传递wifi信息到esp8266开发版     -------------------------------------------------------------------------------
 
@@ -223,11 +259,12 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
     /**
      * 获取wifi信息
      */
-    private fun setWifiInfoData(wifiInfo: WifiInfo) {
+    private fun setWifiInfoData(wifiInfo: WifiInfo?) {
         val result = mViewModel.getWiFiResult()
         result.onClearWiFiData()
+
         result.wifi_connected = isWifiConnected(wifiInfo)
-        if (!result.wifi_connected) {
+        if (wifiInfo == null || !result.wifi_connected) {
             result.message = getString(R.string.esptouch_message_wifi_connection)
             return
         }
@@ -267,6 +304,7 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
      */
     private fun onLocationPermissionGranted() {
         mViewModel.getWiFiResult().permission_granted = true
+        registerNetworkStatusChangedListener()
         getCurrentWifiInfo()
     }
 
@@ -358,5 +396,11 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
             }, {
                 onLocationPermissionExplained()
             })
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        //取消注册网络状态监听
+        unregisterNetworkStatusChangedListener()
     }
 }
