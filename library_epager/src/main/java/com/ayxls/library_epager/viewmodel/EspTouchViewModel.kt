@@ -3,6 +3,7 @@ package com.ayxls.library_epager.viewmodel
 import android.Manifest
 import com.ayxls.library_epager.R
 import com.ayxls.library_epager.bean.WiFiStateResultBean
+import com.ayxls.library_epager.repository.EspTouchRepository
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.ObjectUtils
 import com.blankj.utilcode.util.StringUtils
@@ -16,9 +17,9 @@ import kotlinx.coroutines.withContext
  * esp 配网
  */
 class EspTouchViewModel : BaseViewModel() {
+    private val repository by lazy { EspTouchRepository() }
 
     private val wifi_result by lazy { WiFiStateResultBean() }
-
 
     /**
      * wifi信息 发送方式 是否为 广播，

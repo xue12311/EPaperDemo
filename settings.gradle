@@ -5,6 +5,9 @@ dependencyResolutionManagement {
         maven { url "https://jitpack.io" }
         mavenCentral()
         jcenter()
+        maven {
+            url "https://repo.eclipse.org/content/repositories/paho-releases/"
+        }
     }
 }
 rootProject.name = "EPaperDemo"

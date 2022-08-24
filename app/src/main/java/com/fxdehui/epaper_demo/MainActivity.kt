@@ -18,6 +18,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.sbut_esptouch2 -> {
                     ARouterNavigationUtils.onEspTouch2Activity()
                 }
+                //MQTT
+                R.id.sbut_mqtt_deploy->{
+
+                }
             }
         }
     }

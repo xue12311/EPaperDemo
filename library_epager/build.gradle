@@ -54,6 +54,10 @@ dependencies {
     implementation 'com.github.EspressifApp:lib-esptouch-v2-android:2.2.1'
     implementation 'com.github.EspressifApp:lib-esptouch-android:1.1.1'
 
+    // MQTT
+    implementation 'org.eclipse.paho:org.eclipse.paho.client.mqttv3:1.2.5'
+    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
+
     api 'com.github.lygttpod:SuperTextView:2.4.6'
 
     //阿里 Arouter
@@ -65,5 +69,6 @@ dependencies {
     implementation "com.github.liujingxing.rxhttp:rxhttp:$rxhttp_version"
     kapt "com.github.liujingxing.rxhttp:rxhttp-compiler:$rxhttp_version"
     implementation "com.github.liujingxing.rxhttp:converter-fastjson:$rxhttp_version"
+
 
 }

@@ -22,6 +22,17 @@
             android:textSize="18sp"
             app:sCornersRadius="10dp"
             app:sSolidColor="@color/colorAccent" />
+        <com.allen.library.SuperButton
+                android:id="@+id/sbut_mqtt_deploy"
+                android:layout_width="match_parent"
+                android:layout_height="45dp"
+                android:text="MQTT配置"
+                android:textColor="@color/white"
+                android:onClick="onViewClick"
+                android:textSize="18sp"
+                app:sCornersRadius="10dp"
+                app:sSolidColor="@color/colorAccent" />
+
 
 
     </LinearLayout>
