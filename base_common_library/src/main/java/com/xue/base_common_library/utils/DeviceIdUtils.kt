@@ -16,12 +16,12 @@ object DeviceIdUtils {
      * 获取设备唯一标识
      */
     fun getDeviceId(): String {
-        val mDeviceIdFile = getDeviceIdFile()
-        if (mDeviceIdFile.exists()) {
+        val deviceIdFile = getDeviceIdFile()
+        if (deviceIdFile.exists()) {
             //文件读取
-            val mFileContent = FileIOUtils.readFile2String(mDeviceIdFile)
-            if (mFileContent.isNotEmpty()) {
-                return mFileContent
+            val fileContent = FileIOUtils.readFile2String(deviceIdFile)
+            if (fileContent.isNotEmpty()) {
+                return fileContent
             } else {
                 return createDeviceId()
             }
@@ -34,18 +34,18 @@ object DeviceIdUtils {
      * 创建设备唯一id
      */
     private fun createDeviceId(): String {
-        val mDeviceIdFile = getDeviceIdFile()
+        val deviceIdFile = getDeviceIdFile()
         //判断文件是否存在，不存在则判断是否创建成功
-        if (FileUtils.createOrExistsFile(mDeviceIdFile)) {
+        if (FileUtils.createOrExistsFile(deviceIdFile)) {
             //文件读取
-            val mFileContent = FileIOUtils.readFile2String(mDeviceIdFile)
-            if (mFileContent.isNullOrEmpty()) {
-                val mDeviceUniqueId = UUID.randomUUID().toString()
+            val fileContent = FileIOUtils.readFile2String(deviceIdFile)
+            if (fileContent.isNullOrEmpty()) {
+                val deviceUniqueId = UUID.randomUUID().toString()
                 //文件写入
-                FileIOUtils.writeFileFromString(mDeviceIdFile, mDeviceUniqueId)
-                return mDeviceUniqueId
+                FileIOUtils.writeFileFromString(deviceIdFile, deviceUniqueId)
+                return deviceUniqueId
             } else {
-                return mFileContent
+                return fileContent
             }
         } else {
             LogUtils.e("设备 唯一值 创建失败")
