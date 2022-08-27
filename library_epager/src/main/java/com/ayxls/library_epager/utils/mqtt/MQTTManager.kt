@@ -3,6 +3,7 @@ package com.ayxls.library_epager.utils.mqtt
 import org.eclipse.paho.client.mqttv3.MqttCallback
 import org.eclipse.paho.client.mqttv3.MqttClient
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions
+import java.util.UUID
 
 //https://blog.csdn.net/weixin_42324979/article/details/118030790
 
@@ -47,6 +48,7 @@ class MQTTManager {
     //消息回调
     private val mCallback: MqttCallback = MyMqttCallback()
 
+
     companion object {
         private var mInstance: MQTTManager? = null
 
@@ -56,5 +58,13 @@ class MQTTManager {
             }
             return mInstance as MQTTManager
         }
+    }
+
+    fun createConnect(host:String,username:String,password:String,topic:Array<String>){
+        mqtt_service_host = host
+        mqtt_service_username = username
+        mqtt_service_password = password
+        mqtt_service_topic = topic
+
     }
 }
