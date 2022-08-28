@@ -40,7 +40,7 @@ object DeviceIdUtils {
             //文件读取
             val fileContent = FileIOUtils.readFile2String(deviceIdFile)
             if (fileContent.isNullOrEmpty()) {
-                val deviceUniqueId = UUID.randomUUID().toString()
+                val deviceUniqueId = createRandomUUIDString()
                 //文件写入
                 FileIOUtils.writeFileFromString(deviceIdFile, deviceUniqueId)
                 return deviceUniqueId
@@ -49,9 +49,16 @@ object DeviceIdUtils {
             }
         } else {
             LogUtils.e("设备 唯一值 创建失败")
-            return UUID.randomUUID().toString()
+            return createRandomUUIDString()
         }
     }
+
+    /**
+     * 创建 UUID
+     */
+    private fun createRandomUUIDString(): String {
+        return UUID.randomUUID().toString()
+     }
 
     private fun getDeviceIdFile(): File {
         var dirPath =
