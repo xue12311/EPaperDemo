@@ -1,11 +1,9 @@
 package com.fxdehui.epaper_demo
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.view.View
+import androidx.appcompat.app.AppCompatActivity
 import com.ayxls.library_epager.utils.ARouterNavigationUtils
-import com.xue.base_common_library.utils.DeviceIdUtils
-import com.blankj.utilcode.util.ToastUtils
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,8 +20,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 //MQTT
                 R.id.sbut_mqtt_deploy -> {
-                    val device_id = DeviceIdUtils.getDeviceId()
-                    ToastUtils.showShort("设备唯一标识：$device_id")
+                    ARouterNavigationUtils.onMqttConfigureActivity()
                 }
             }
         }

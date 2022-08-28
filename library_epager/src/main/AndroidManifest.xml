@@ -18,5 +18,7 @@
         <service android:name="org.eclipse.paho.android.service.MqttService"/>
 
         <activity android:name=".activity.EspTouchActivity"/>
+
+        <activity android:name=".activity.MqttConfigureActivity"/>
     </application>
 </manifest>

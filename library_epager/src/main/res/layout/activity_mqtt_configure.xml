@@ -1,6 +1,91 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-                                                   android:layout_width="match_parent"
-                                                   android:layout_height="match_parent">
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_connect_mqtt"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="连接MQTT"
+            app:cornerRadius="10dp"
+            android:textColor="@color/white"
+            app:rippleColor="@color/colorPrimary"
+            app:backgroundTint="@color/colorPrimaryDark"
+            android:gravity="center"/>
+
+    <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/layout_mqtt_subscribe_topics"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:hint="订阅主题"
+            app:layout_constraintTop_toBottomOf="@id/tv_ip_label"
+            app:passwordToggleEnabled="true">
+
+        <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edit_mqtt_subscribe_topics"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="text"
+                android:singleLine="true"/>
+    </com.google.android.material.textfield.TextInputLayout>
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_subscribe_mqtt"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="订阅MQTT主题"
+            app:cornerRadius="10dp"
+            android:textColor="@color/white"
+            app:rippleColor="@color/colorPrimary"
+            app:backgroundTint="@color/colorPrimaryDark"
+            android:gravity="center"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_unsubscribe_mqtt"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="取消订阅MQTT"
+            app:cornerRadius="10dp"
+            android:textColor="@color/white"
+            app:rippleColor="@color/colorPrimary"
+            app:backgroundTint="@color/colorPrimaryDark"
+            android:gravity="center"/>
+
+    <com.google.android.material.button.MaterialButton
+            android:id="@+id/button_disconnect_mqtt"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginRight="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginTop="10dp"
+            android:text="断开MQTT连接"
+            app:cornerRadius="10dp"
+            android:textColor="@color/white"
+            app:rippleColor="@color/colorPrimary"
+            app:backgroundTint="@color/colorPrimaryDark"
+            android:gravity="center"/>
+    <androidx.appcompat.widget.AppCompatTextView
+            android:id="@+id/tv_subscribe_message"
+            android:layout_width="match_parent"
+            android:layout_marginTop="10dp"
+            android:layout_height="0dp"
+            android:padding="10dp"
+            android:layout_weight="1"/>
+</LinearLayout>

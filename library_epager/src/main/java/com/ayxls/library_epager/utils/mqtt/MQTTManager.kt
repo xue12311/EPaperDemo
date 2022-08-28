@@ -11,7 +11,6 @@ import org.eclipse.paho.client.mqttv3.*
 //https://blog.csdn.net/weixin_42324979/article/details/118030790
 
 class MQTTManager {
-    private val TAG = MQTTManager::class.java.name
 
     /**
      * 服务器地址（协议+地址+端口号）
