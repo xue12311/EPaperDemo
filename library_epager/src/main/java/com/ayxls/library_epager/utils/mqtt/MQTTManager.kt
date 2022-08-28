@@ -1,11 +1,10 @@
 package com.ayxls.library_epager.utils.mqtt
 
 import com.blankj.utilcode.util.LogUtils
-import com.blankj.utilcode.util.ObjectUtils
 import com.blankj.utilcode.util.StringUtils
 import com.blankj.utilcode.util.Utils
 import com.xue.base_common_library.utils.DeviceIdUtils
-import org.eclipse.paho.android.service.MqttAndroidClient
+import info.mqtt.android.service.MqttAndroidClient
 import org.eclipse.paho.client.mqttv3.*
 
 //https://blog.csdn.net/weixin_42324979/article/details/118030790
@@ -108,7 +107,7 @@ class MQTTManager {
              * userContext：可选对象，用于向回调传递上下文。一般传null即可
              * callback：用来监听MQTT是否连接成功的回调
              * */
-            mMqttClient?.connect(mMqttConnectOptions, null, object : IMqttActionListener {
+            mMqttClient?.connect(mMqttConnectOptions!!, null, object : IMqttActionListener {
                 override fun onSuccess(asyncActionToken: IMqttToken?) {
                     LogUtils.e("MQTT连接成功")
                     if (mqtt_topic_name.isNotEmpty()) {
