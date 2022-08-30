@@ -7,20 +7,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-    <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_connect_mqtt"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="10dp"
-            android:text="连接MQTT"
-            app:cornerRadius="10dp"
-            android:textColor="@color/white"
-            app:rippleColor="@color/colorPrimary"
-            app:backgroundTint="@color/colorPrimaryDark"
-            android:gravity="center"/>
-
     <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/layout_mqtt_subscribe_topics"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -68,19 +54,6 @@
             app:backgroundTint="@color/colorPrimaryDark"
             android:gravity="center"/>
 
-    <com.google.android.material.button.MaterialButton
-            android:id="@+id/button_disconnect_mqtt"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginRight="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginTop="10dp"
-            android:text="断开MQTT连接"
-            app:cornerRadius="10dp"
-            android:textColor="@color/white"
-            app:rippleColor="@color/colorPrimary"
-            app:backgroundTint="@color/colorPrimaryDark"
-            android:gravity="center"/>
     <androidx.appcompat.widget.AppCompatTextView
             android:id="@+id/tv_subscribe_message"
             android:layout_width="match_parent"

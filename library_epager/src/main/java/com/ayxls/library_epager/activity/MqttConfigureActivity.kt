@@ -3,19 +3,19 @@ package com.ayxls.library_epager.activity
 import android.os.Bundle
 import android.view.MenuItem
 import android.view.View
-import androidx.activity.result.contract.ActivityResultContracts
 import com.alibaba.android.arouter.facade.annotation.Route
+import com.ayxls.library_epager.bean.live_event_bus.MqttLiveEvent
 import com.ayxls.library_epager.constant.ARouterConstants
 import com.ayxls.library_epager.databinding.ActivityMqttConfigureBinding
+import com.ayxls.library_epager.lifecycle.MqttLifecycleObserver
 import com.ayxls.library_epager.viewmodel.MqttConfigureViewModel
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.StringUtils
+import com.jeremyliao.liveeventbus.LiveEventBus
 import com.xue.base_common_library.base.activity.BaseVmVbActivity
 
 @Route(path = ARouterConstants.ARouterActivityMqttConfigure)
 class MqttConfigureActivity : BaseVmVbActivity<MqttConfigureViewModel, ActivityMqttConfigureBinding>() {
-
-    private val mButMqttConnect by lazy { mViewBinding.buttonConnectMqtt }
 
     private val mEditMqttSubscribeTopic by lazy { mViewBinding.editMqttSubscribeTopics }
 
@@ -23,10 +23,10 @@ class MqttConfigureActivity : BaseVmVbActivity<MqttConfigureViewModel, ActivityM
 
     private val mButMqttUnSubscribe by lazy { mViewBinding.buttonUnsubscribeMqtt }
 
-    private val mButMqttDisconnect by lazy { mViewBinding.buttonDisconnectMqtt }
-
     private val mTvMqttSubscribeMessage by lazy { mViewBinding.tvSubscribeMessage }
 
+    //mqtt 连接
+    private val mMQTTLifecycle: MqttLifecycleObserver by lazy { MqttLifecycleObserver() }
 
     override fun initView(savedInstanceState: Bundle?) {
         super.initView(savedInstanceState)
@@ -36,16 +36,18 @@ class MqttConfigureActivity : BaseVmVbActivity<MqttConfigureViewModel, ActivityM
 
     override fun createObserver() {
         super.createObserver()
+        LiveEventBus.get(MqttLiveEvent::class.java).observe(this) {
+            showToastMessage("收到消息：${it.message}")
+        }
     }
 
     override fun initListener() {
         super.initListener()
+        lifecycle.addObserver(mMQTTLifecycle)
         ClickUtils.applySingleDebouncing(
             arrayOf(
-                mButMqttConnect,
                 mButMqttSubscribe,
                 mButMqttUnSubscribe,
-                mButMqttDisconnect
             ), mClickListener
         )
     }
@@ -69,15 +71,11 @@ class MqttConfigureActivity : BaseVmVbActivity<MqttConfigureViewModel, ActivityM
     private val mClickListener = object : View.OnClickListener {
         override fun onClick(view: View?) {
             when (view?.id) {
-                //mqtt连接
-                mButMqttConnect.id -> {
-                    mViewModel.onMqttConnect()
-                }
                 //mqtt订阅
                 mButMqttSubscribe.id -> {
                     val topic = StringUtils.null2Length0(mEditMqttSubscribeTopic.text.toString())
                     if (topic.isNotEmpty()) {
-                        mViewModel.onMqttSubscribe(topic)
+                        mMQTTLifecycle.onSubscribeTopic(topic)
                     } else {
                         showToastMessage("请输入订阅主题")
                     }
@@ -86,21 +84,12 @@ class MqttConfigureActivity : BaseVmVbActivity<MqttConfigureViewModel, ActivityM
                 mButMqttUnSubscribe.id -> {
                     val topic = StringUtils.null2Length0(mEditMqttSubscribeTopic.text.toString())
                     if (topic.isNotEmpty()) {
-                        mViewModel.onMqttUnSubscribe(topic)
+                        mMQTTLifecycle.onUnSubscribeTopic(topic)
                     } else {
                         showToastMessage("请输入订阅主题")
                     }
                 }
-                //mqtt断开连接
-                mButMqttDisconnect.id -> {
-                    mViewModel.onMqttDisconnect()
-                }
             }
         }
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        mViewModel.onMqttDisconnect()
     }
 }

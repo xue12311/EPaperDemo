@@ -60,6 +60,9 @@ dependencies {
 
     implementation 'com.github.hannesa2:paho.mqtt.android:3.5.0'
 
+    //LiveEventBus
+    implementation 'io.github.jeremyliao:live-event-bus-x:1.8.0'
+
 
     api 'com.github.lygttpod:SuperTextView:2.4.6'
 

@@ -1,12 +1,12 @@
 package com.fxdehui.epaper_demo
 
-import android.app.Application
 import android.content.Context
 import androidx.multidex.MultiDex
 import com.alibaba.android.arouter.launcher.ARouter
+import com.ayxls.library_epager.base.BaseApplication
 import com.blankj.utilcode.util.*
 
-class MyApplication : Application() {
+class MyApplication : BaseApplication() {
     override fun attachBaseContext(base: Context) {
         super.attachBaseContext(base)
         MultiDex.install(this)
@@ -32,6 +32,8 @@ class MyApplication : Application() {
             ARouter.openDebug()
         }
         ARouter.init(this)
-    }
 
+        //初始化 LiveEventBus
+        initLiveEventBus(AppConstant.isAppDebug)
+    }
 }

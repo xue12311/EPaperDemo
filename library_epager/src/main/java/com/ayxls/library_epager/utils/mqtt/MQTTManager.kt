@@ -26,10 +26,6 @@ class MQTTManager {
      */
     private var mqtt_service_password: String = ""
 
-    /**
-     * 订阅 MQTT 主题名称
-     */
-    private var mqtt_topic_name: String = ""
 
     /**
      * 连接到MQTT服务器的 客户端id
@@ -47,9 +43,6 @@ class MQTTManager {
      */
     private var mMqttConnectOptions: MqttConnectOptions? = null
 
-    //消息回调
-    private var mCallback: MqttCallback? = null
-
 
     companion object {
         private var mInstance: MQTTManager? = null
@@ -62,33 +55,40 @@ class MQTTManager {
         }
     }
 
-    fun createConnect(host: String, username: String, password: String) {
-        createConnect(host, username, password, null,null,null)
-    }
+    fun createConnect(host: String, username: String, password: String) =
+        createConnect(host, username, password, null, null)
 
-    fun createConnect(host: String, username: String, password: String, callback: MqttCallback) {
-        createConnect(host, username, password, null, callback,null)
-    }
+    fun createConnect(host: String, username: String, password: String, callback: MqttCallback) =
+        createConnect(host, username, password, callback, null)
 
-    fun createConnect(host: String, username: String, password: String, topic: String?, callback: MqttCallback?,iMqttActionListener:IMqttActionListener?) {
+    fun createConnect(
+        host: String,
+        username: String,
+        password: String,
+        callback: MqttCallback?,
+        iMqttActionListener: IMqttActionListener?
+    ): Boolean {
         mqtt_service_host = host
         mqtt_service_username = username
         mqtt_service_password = password
-        mqtt_topic_name = StringUtils.null2Length0(topic)
-        mCallback = callback
-        initMqttConnect(iMqttActionListener)
+        return initMqttConnect(callback, iMqttActionListener)
     }
 
     /**
      * 初始化  MQTT连接参数
      */
-    private fun initMqttConnect(iMqttActionListener:IMqttActionListener?) {
+    private fun initMqttConnect(mCallback: MqttCallback?, iMqttActionListener: IMqttActionListener?): Boolean {
+        if (mMqttClient != null && mMqttClient!!.isConnected) {
+            LogUtils.e("MQTT已经连接，不需要重新连接")
+            return true
+        }
+
         try {
             //创建MQTT客户端
             mMqttClient = MqttAndroidClient(Utils.getApp(), mqtt_service_host, mqtt_service_client_id)
             if (mCallback != null) {
                 //设置MQTT 回调监听 并且 接受消息
-                mMqttClient?.setCallback(mCallback!!)
+                mMqttClient?.setCallback(mCallback)
             }
 
             //创建MQTT连接
@@ -114,52 +114,28 @@ class MQTTManager {
              * userContext：可选对象，用于向回调传递上下文。一般传null即可
              * callback：用来监听MQTT是否连接成功的回调
              * */
-            mMqttClient?.connect(mMqttConnectOptions!!, null, object : IMqttActionListener {
-                override fun onSuccess(asyncActionToken: IMqttToken?) {
-                    LogUtils.e("MQTT连接成功")
-                    if (mqtt_topic_name.isNotEmpty()) {
-                        //订阅主题
-                        subscribeTopic(mqtt_topic_name,iMqttActionListener)
-                    }
-                }
-
-                override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
-                    LogUtils.e("MQTT连接失败")
-                }
-            })
-
-
+            mMqttClient?.connect(mMqttConnectOptions!!, null, iMqttActionListener)
+            return true
         } catch (e: MqttException) {
             LogUtils.e("MQTT连接失败", e)
+            return false
         }
     }
 
-//    private val iMqttActionListener = object : IMqttActionListener {
-//        override fun onSuccess(asyncActionToken: IMqttToken?) {
-//            LogUtils.e("MQTT订阅成功")
-//        }
-//
-//        override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
-//            LogUtils.e("MQTT订阅失败 ${exception?.message}")
-//        }
-//    }
+
+    /**
+     * 订阅主题
+     * @param topic 订阅消息的主题
+     */
+    fun subscribeTopic(topic: String) = subscribeTopic(topic, 0, null)
 
 
     /**
      * 订阅主题
      * @param topic 订阅消息的主题
      */
-    fun subscribeTopic(topic: String) {
-        subscribeTopic(topic, 0,null)
-    }
-
-    /**
-     * 订阅主题
-     * @param topic 订阅消息的主题
-     */
-    fun subscribeTopic(topic: String,listener: IMqttActionListener?) {
-        subscribeTopic(topic, 0,listener)
-    }
+    fun subscribeTopic(topic: String, listener: IMqttActionListener?) =
+        subscribeTopic(topic, 0, listener)
 
     /**
      * 订阅主题
@@ -243,8 +219,9 @@ class MQTTManager {
      * @param retained  是否在服务器保留断开连接后的最后一条消息
      */
     fun publishMessage(topic: String, payload: String, qos: Int, retained: Boolean): Boolean {
-       return publishMessage(topic, payload, qos, retained,null)
+        return publishMessage(topic, payload, qos, retained, null)
     }
+
     /**
      * 发送信息
      * @param topic 发送消息的主题
@@ -252,7 +229,13 @@ class MQTTManager {
      * @param qos   提供消息的服务质量
      * @param retained  是否在服务器保留断开连接后的最后一条消息
      */
-    fun publishMessage(topic: String, payload: String, qos: Int, retained: Boolean, iMqttActionListener: IMqttActionListener?): Boolean {
+    fun publishMessage(
+        topic: String,
+        payload: String,
+        qos: Int,
+        retained: Boolean,
+        iMqttActionListener: IMqttActionListener?
+    ): Boolean {
         if (mMqttClient == null || !mMqttClient!!.isConnected) {
             LogUtils.e("MQTT未连接,无法订阅")
             return false
@@ -276,13 +259,24 @@ class MQTTManager {
     /**
      * 断开 MQTT连接
      */
-    fun disConnect() {
+    fun disConnect(): Boolean {
         if (mMqttClient != null && mMqttClient!!.isConnected) {
             try {
                 mMqttClient?.disconnect()
+                return true
             } catch (e: MqttException) {
                 LogUtils.e("MQTT断开连接失败", e)
+                return false
             }
+        }
+        return true
+    }
+
+    fun close() {
+        if (mMqttClient != null) {
+            mMqttClient?.unregisterResources()
+            mMqttClient?.close()
+            mMqttClient = null
         }
     }
 }
