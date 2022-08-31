@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'kotlin-android'
     id 'kotlin-kapt'
+    id 'kotlin-parcelize'
 }
 
 kapt {
@@ -59,9 +60,6 @@ dependencies {
 //    implementation 'org.eclipse.paho:org.eclipse.paho.android.service:1.1.1'
 
     implementation 'com.github.hannesa2:paho.mqtt.android:3.5.0'
-
-    //LiveEventBus
-    implementation 'io.github.jeremyliao:live-event-bus-x:1.8.0'
 
 
     api 'com.github.lygttpod:SuperTextView:2.4.6'

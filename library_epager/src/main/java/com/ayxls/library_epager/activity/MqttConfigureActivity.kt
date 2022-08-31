@@ -7,7 +7,6 @@ import com.alibaba.android.arouter.facade.annotation.Route
 import com.ayxls.library_epager.bean.live_event_bus.MqttLiveEvent
 import com.ayxls.library_epager.constant.ARouterConstants
 import com.ayxls.library_epager.databinding.ActivityMqttConfigureBinding
-import com.ayxls.library_epager.lifecycle.MqttLifecycleObserver
 import com.ayxls.library_epager.viewmodel.MqttConfigureViewModel
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.StringUtils

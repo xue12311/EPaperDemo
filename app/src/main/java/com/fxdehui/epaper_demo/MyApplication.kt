@@ -32,8 +32,5 @@ class MyApplication : BaseApplication() {
             ARouter.openDebug()
         }
         ARouter.init(this)
-
-        //初始化 LiveEventBus
-        initLiveEventBus(AppConstant.isAppDebug)
     }
 }
