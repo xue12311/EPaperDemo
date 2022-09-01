@@ -77,5 +77,9 @@ data class MqttConnectionStatusBean(
          * mqtt 消息 内容
          */
         var message: String? = null,
+        /**
+         * 时间
+         */
+        var time: String? = null,
     ) : Parcelable
 }

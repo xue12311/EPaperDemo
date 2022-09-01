@@ -4,7 +4,7 @@ package com.ayxls.library_epager.constant
  * MQTT 常量类
  */
 object MqttConstant {
-    const val MQTT_HOST = "mqtt://u3b8f729.cn-shenzhen.emqx.cloud:11130"
+    const val MQTT_HOST = "ws://u3b8f729.cn-shenzhen.emqx.cloud:13191"
     const val MQTT_USERNAME = "zhangjiaxue"
     const val MQTT_PASSWORD = "zhangjiaxue"
 

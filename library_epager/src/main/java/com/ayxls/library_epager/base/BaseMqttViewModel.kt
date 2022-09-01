@@ -1,15 +1,21 @@
 package com.ayxls.library_epager.base
 
+import androidx.lifecycle.viewModelScope
 import com.ayxls.library_epager.constant.MqttConstant
 import com.ayxls.library_epager.utils.mqtt.MQTTManager
 import com.ayxls.library_epager.utils.mqtt.MqttConnectionStatusBean
 import com.blankj.utilcode.util.LogUtils
 import com.blankj.utilcode.util.StringUtils
+import com.blankj.utilcode.util.ThreadUtils
+import com.blankj.utilcode.util.TimeUtils
 import com.blankj.utilcode.util.Utils
 import com.xue.base_common_library.base.viewmodel.BaseViewModel
 import com.xue.base_common_library.utils.DeviceIdUtils
 import info.mqtt.android.service.MqttAndroidClient
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.eclipse.paho.client.mqttv3.*
 
 open class BaseMqttViewModel : BaseViewModel() {
@@ -51,8 +57,19 @@ open class BaseMqttViewModel : BaseViewModel() {
      * 连接MQTT
      */
     protected fun onConnect(mqttHost: String, mqttUserName: String, mqttPassword: String) {
-        setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_CONNECTING)
-        initMqttConnect(mqttHost, mqttUserName, mqttPassword, mqttCallback, null)
+        viewModelScope.launch {
+            initMqttConnect(mqttHost, mqttUserName, mqttPassword, mqttCallback, object : IMqttActionListener {
+                override fun onSuccess(asyncActionToken: IMqttToken?) {
+                    LogUtils.e("MQTT连接 成功")
+                    setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_CONNECTED)
+                }
+
+                override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                    LogUtils.e("MQTT连接 失败 ${exception}")
+                    setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
+                }
+            })
+        }
     }
 
     /**
@@ -60,7 +77,9 @@ open class BaseMqttViewModel : BaseViewModel() {
      *
      */
     protected fun onDisConnect() {
-        disConnect()
+        viewModelScope.launch {
+            disConnect()
+        }
     }
 
 
@@ -69,7 +88,9 @@ open class BaseMqttViewModel : BaseViewModel() {
      * @param topic 订阅消息的主题
      */
     protected fun onSubscribeTopic(topic: String) {
-        subscribeTopic(topic, mqttSubscribeListener)
+        viewModelScope.launch {
+            subscribeTopic(topic, mqttSubscribeListener)
+        }
     }
 
     /**
@@ -77,7 +98,9 @@ open class BaseMqttViewModel : BaseViewModel() {
      * @param topic 订阅消息的主题
      */
     protected fun onUnSubscribeTopic(topic: String) {
-        unSubscribeTopic(topic)
+        viewModelScope.launch {
+            unSubscribeTopic(topic)
+        }
     }
 
 
@@ -85,15 +108,10 @@ open class BaseMqttViewModel : BaseViewModel() {
      * 取消订阅
      * @param topic 订阅消息的主题
      */
-    protected fun onUnSubscribeTopic(topic: Array<String>) {
-        if (!isConnected()) {
-            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
-            return
+    private fun onUnSubscribeTopic(topic: Array<String>) {
+        viewModelScope.launch {
+            unsubscribeTopic(topic)
         }
-        setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBING)
-        val isSuccess = unsubscribeTopic(topic)
-
-
     }
 
     /**
@@ -140,7 +158,7 @@ open class BaseMqttViewModel : BaseViewModel() {
 
             _mqtt_connection_status.value = MqttConnectionStatusBean(
                 MqttConstant.MqttStatusType.MQTT_RECEIVE_SUBSCRIBE_MESSAGE,
-                MqttConnectionStatusBean.MqttMessageBean(topic, str_message)
+                MqttConnectionStatusBean.MqttMessageBean(topic, str_message,TimeUtils.getNowString())
             )
 
         }
@@ -170,15 +188,16 @@ open class BaseMqttViewModel : BaseViewModel() {
     /**
      * 初始化  MQTT连接参数
      */
-    private fun initMqttConnect(
+    private suspend fun initMqttConnect(
         mqtt_service_host: String, mqtt_service_username: String, mqtt_service_password: String,
         mCallback: MqttCallback?, iMqttActionListener: IMqttActionListener?
-    ): Boolean {
+    ) = withContext(Dispatchers.IO) {
         if (isConnected()) {
             LogUtils.e("MQTT已经连接，不需要重新连接")
-            return true
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_CONNECTED)
         }
 
+        setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_CONNECTING)
         try {
             //创建MQTT客户端
             mMqttClient = MqttAndroidClient(Utils.getApp(), mqtt_service_host, mqtt_service_client_id)
@@ -186,7 +205,6 @@ open class BaseMqttViewModel : BaseViewModel() {
                 //设置MQTT 回调监听 并且 接受消息
                 mMqttClient?.setCallback(mCallback)
             }
-
             //创建MQTT连接
             mMqttConnectOptions = MqttConnectOptions()
             //设置是否清空session,这里如果设置为false表示服务器会保留客户端的连接记录，这里设置为true表示每次连接到服务器都以新的身份连接
@@ -210,11 +228,11 @@ open class BaseMqttViewModel : BaseViewModel() {
              * userContext：可选对象，用于向回调传递上下文。一般传null即可
              * callback：用来监听MQTT是否连接成功的回调
              * */
-            mMqttClient?.connect(mMqttConnectOptions!!, null, iMqttActionListener)
-            return true
+            mMqttClient?.connect(mMqttConnectOptions!!, null, iMqttActionListener)?.waitForCompletion()
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_CONNECTED)
         } catch (e: MqttException) {
             LogUtils.e("MQTT连接失败", e)
-            return false
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
         }
     }
 
@@ -223,14 +241,25 @@ open class BaseMqttViewModel : BaseViewModel() {
      * 订阅主题
      * @param topic 订阅消息的主题
      */
-    private fun subscribeTopic(topic: String) = subscribeTopic(topic, 0, null)
+    private suspend fun subscribeTopic(topic: String) = subscribeTopic(topic, 0, object : IMqttActionListener {
+        override fun onSuccess(asyncActionToken: IMqttToken?) {
+            LogUtils.e("订阅主题 成功")
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_SUBSCRIBE_SUCCEEDED)
+
+        }
+
+        override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+            LogUtils.e("订阅主题 失败 ${exception}")
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_SUBSCRIBE_FAILED)
+        }
+    })
 
 
     /**
      * 订阅主题
      * @param topic 订阅消息的主题
      */
-    private fun subscribeTopic(topic: String, listener: IMqttActionListener?) =
+    private suspend fun subscribeTopic(topic: String, listener: IMqttActionListener?) =
         subscribeTopic(topic, 0, listener)
 
     /**
@@ -238,74 +267,73 @@ open class BaseMqttViewModel : BaseViewModel() {
      * @param topic 订阅消息的主题
      * @param qos 订阅消息的服务质量
      */
-    private fun subscribeTopic(topic: String, qos: Int, listener: IMqttActionListener?): Boolean {
+    private suspend fun subscribeTopic(topic: String, qos: Int, listener: IMqttActionListener?) =
+        withContext(Dispatchers.IO) {
+            if (!isConnected()) {
+                LogUtils.e("MQTT未连接,无法订阅")
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
+            }
+            if (topic.isEmpty()) {
+                LogUtils.e("订阅的topic为空")
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_SUBSCRIBE_FAILED)
+            }
+            try {
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_SUBSCRIBING)
+                //订阅主题
+                mMqttClient?.subscribe(topic, qos, null, listener)?.waitForCompletion()
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_SUBSCRIBE_SUCCEEDED)
+            } catch (e: MqttException) {
+                LogUtils.e("订阅主题失败", e)
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_SUBSCRIBE_FAILED)
+            }
+        }
+
+    /**
+     * 取消订阅
+     * @param topic 订阅消息的主题
+     */
+    private suspend fun unSubscribeTopic(topic: String) = withContext(Dispatchers.IO) {
         if (!isConnected()) {
             LogUtils.e("MQTT未连接,无法订阅")
-            return false
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
         }
         if (topic.isEmpty()) {
             LogUtils.e("订阅的topic为空")
-            return false
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBE_FAILED)
         }
         try {
-            //订阅主题
-            if (topic.isNotEmpty()) {
-                mMqttClient?.subscribe(topic, qos, null, listener)
-                return true
-            }
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBING)
+            //取消订阅
+            mMqttClient?.unsubscribe(topic)?.waitForCompletion()
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBE_SUCCEEDED)
         } catch (e: MqttException) {
-            LogUtils.e("订阅主题失败", e)
+            LogUtils.e("取消订阅失败", e)
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBE_FAILED)
         }
-        return false
     }
 
     /**
      * 取消订阅
      * @param topic 订阅消息的主题
      */
-    private fun unSubscribeTopic(topic: String): Boolean {
+    private suspend fun unsubscribeTopic(topic: Array<String>) = withContext(Dispatchers.IO) {
         if (!isConnected()) {
             LogUtils.e("MQTT未连接,无法订阅")
-            return false
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
         }
         if (topic.isEmpty()) {
             LogUtils.e("订阅的topic为空")
-            return false
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBE_FAILED)
         }
         try {
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBING)
             //取消订阅
-            if (topic.isNotEmpty()) {
-                mMqttClient?.unsubscribe(topic)
-                return true
-            }
+            mMqttClient?.unsubscribe(topic)?.waitForCompletion()
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBE_SUCCEEDED)
         } catch (e: MqttException) {
             LogUtils.e("取消订阅失败", e)
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_TOPIC_UNSUBSCRIBE_FAILED)
         }
-        return false
-    }
-
-    /**
-     * 取消订阅
-     * @param topic 订阅消息的主题
-     */
-    private fun unsubscribeTopic(topic: Array<String>): Boolean {
-
-        if (!isConnected()) {
-            LogUtils.e("MQTT未连接,无法订阅")
-            return false
-        }
-        if (topic.isEmpty()) {
-            LogUtils.e("订阅的topic为空")
-            return false
-        }
-        try {
-            //取消订阅
-            mMqttClient?.unsubscribe(topic)
-            return true
-        } catch (e: MqttException) {
-            LogUtils.e("取消订阅失败", e)
-        }
-        return false
     }
 
     /**
@@ -315,8 +343,18 @@ open class BaseMqttViewModel : BaseViewModel() {
      * @param qos   提供消息的服务质量
      * @param retained  是否在服务器保留断开连接后的最后一条消息
      */
-    private fun publishMessage(topic: String, payload: String, qos: Int, retained: Boolean): Boolean {
-        return publishMessage(topic, payload, qos, retained, null)
+    private suspend fun publishMessage(topic: String, payload: String, qos: Int, retained: Boolean) {
+        publishMessage(topic, payload, qos, retained, object : IMqttActionListener {
+            override fun onSuccess(asyncActionToken: IMqttToken?) {
+                LogUtils.e("发送信息 成功")
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_MESSAGE_SEND_SUCCEEDED)
+            }
+
+            override fun onFailure(asyncActionToken: IMqttToken?, exception: Throwable?) {
+                LogUtils.e("发送信息 失败 $exception")
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_MESSAGE_SEND_FAILED)
+            }
+        })
     }
 
     /**
@@ -326,47 +364,48 @@ open class BaseMqttViewModel : BaseViewModel() {
      * @param qos   提供消息的服务质量
      * @param retained  是否在服务器保留断开连接后的最后一条消息
      */
-    private fun publishMessage(
+    private suspend fun publishMessage(
         topic: String,
         payload: String,
         qos: Int,
         retained: Boolean,
         iMqttActionListener: IMqttActionListener?
-    ): Boolean {
+    ) = withContext(Dispatchers.IO) {
         if (!isConnected()) {
             LogUtils.e("MQTT未连接,无法订阅")
-            return false
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
         }
         if (topic.isEmpty()) {
-            LogUtils.e("订阅的topic为空")
-            return false
+            LogUtils.e("发送信息的topic为空")
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_MESSAGE_SEND_FAILED)
         }
         try {
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_MESSAGE_SENDING)
             //订阅主题
-            if (topic.isNotEmpty()) {
-                mMqttClient?.publish(topic, payload.toByteArray(), qos, retained, null, iMqttActionListener)
-                return true
-            }
+            mMqttClient?.publish(topic, payload.toByteArray(), qos, retained, null, iMqttActionListener)?.waitForCompletion()
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_MESSAGE_SEND_SUCCEEDED)
         } catch (e: MqttException) {
-            LogUtils.e("订阅主题失败", e)
+            LogUtils.e("发送信息 失败 $e")
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_MESSAGE_SEND_FAILED)
         }
-        return false
     }
 
     /**
      * 断开 MQTT连接
      */
-    private fun disConnect(): Boolean {
+    private suspend fun disConnect() = withContext(Dispatchers.IO) {
         if (isConnected()) {
             try {
-                mMqttClient?.disconnect()
-                return true
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_DISCONNECTING)
+                mMqttClient?.disconnect()?.waitForCompletion()
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
             } catch (e: MqttException) {
                 LogUtils.e("MQTT断开连接失败", e)
-                return false
+                setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_DISCONNECTED_FAILED)
             }
+        } else {
+            setMqttConnectionStatus(MqttConstant.MqttStatusType.MQTT_NOT_CONNECTED)
         }
-        return true
     }
 
     /**
