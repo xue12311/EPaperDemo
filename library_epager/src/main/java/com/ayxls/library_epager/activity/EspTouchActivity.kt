@@ -1,19 +1,16 @@
 package com.ayxls.library_epager.activity
 
-import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
-import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.alibaba.android.arouter.facade.annotation.Route
 import com.ayxls.library_epager.R
@@ -22,7 +19,10 @@ import com.ayxls.library_epager.databinding.ActivityEsptouchBinding
 import com.ayxls.library_epager.ext.showPermissionDialog
 import com.ayxls.library_epager.ext.toDefaultInt
 import com.ayxls.library_epager.viewmodel.EspTouchViewModel
-import com.blankj.utilcode.util.*
+import com.blankj.utilcode.util.ClickUtils
+import com.blankj.utilcode.util.NetworkUtils
+import com.blankj.utilcode.util.PermissionUtils
+import com.blankj.utilcode.util.StringUtils
 import com.espressif.iot.esptouch.EsptouchTask
 import com.espressif.iot.esptouch.IEsptouchListener
 import com.espressif.iot.esptouch.IEsptouchResult
