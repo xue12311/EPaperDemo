@@ -54,7 +54,7 @@ class EspTouchViewModel : BaseViewModel() {
                     setToastMessage(StringUtils.getString(R.string.esptouch1_configure_result_failed))
                     onFailed?.invoke()
                 } else
-                    if (firstResult.isCancelled ?: true) {
+                    if (firstResult.isCancelled) {
                         setToastMessage(StringUtils.getString(R.string.esptouch1_configure_result_cancelled))
                         onFailed?.invoke()
                         //配网失败
