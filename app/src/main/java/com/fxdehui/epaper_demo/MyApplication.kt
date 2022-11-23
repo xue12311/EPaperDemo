@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.multidex.MultiDex
 import com.alibaba.android.arouter.launcher.ARouter
 import com.ayxls.library_epager.base.BaseApplication
+import com.ayxls.library_epager.database.RoomManager
 import com.ayxls.library_epager.utils.http_sender.RxHttpManager
 import com.blankj.utilcode.util.*
 
@@ -27,6 +28,8 @@ class MyApplication : BaseApplication() {
             .setGlobalTag(AppUtils.getAppName())
         //网络请求
         RxHttpManager.init(this, AppConstant.isAppDebug)
+        //数据库
+        RoomManager.initRoomManager(this)
         if (AppConstant.isAppDebug) {
             // 打印日志
             ARouter.openLog()
