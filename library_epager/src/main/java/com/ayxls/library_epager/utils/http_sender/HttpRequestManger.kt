@@ -12,7 +12,7 @@ import rxhttp.wrapper.param.RxHttp
 object HttpRequestManger {
 
     fun setBaseURL(url: String) {
-        HttpApiConstants.baseUrl = url
+//        HttpApiConstants.baseUrl = url
     }
 
     /**

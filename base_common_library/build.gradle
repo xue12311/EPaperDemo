@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    compileSdk 32
+    compileSdk 33
 
     defaultConfig {
         minSdk 21
@@ -61,9 +61,9 @@ dependencies {
     //帮助类
     api 'com.blankj:utilcodex:1.31.0'
     //XPopup 提示框
-    api 'com.github.li-xiaojun:XPopup:2.8.14'
+    api 'com.github.li-xiaojun:XPopup:2.9.19'
     //GSON
-    api 'com.google.code.gson:gson:2.9.0'
+    api 'com.google.code.gson:gson:2.10.1'
 
 
 }

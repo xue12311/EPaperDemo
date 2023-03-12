@@ -269,15 +269,12 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
             return
         }
         result.is5G = TouchNetUtil.is5G(wifiInfo.frequency)
-        if (result.is5G) {
-            result.message = getString(R.string.esptouch_message_wifi_frequency)
-            return
-        }
-
+//        if (result.is5G) {
+//            result.message = getString(R.string.esptouch_message_wifi_frequency)
+//            return
+//        }
         result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
-
         result.wifi_bssid = wifiInfo.bssid
-
         if (wifiInfo.ipAddress != 0) {
             result.wifi_ip_address = TouchNetUtil.getAddress(wifiInfo.ipAddress)
         } else {

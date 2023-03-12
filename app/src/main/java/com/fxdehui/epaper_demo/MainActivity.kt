@@ -4,15 +4,21 @@ import android.os.Bundle
 import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import com.ayxls.library_epager.utils.ARouterNavigationUtils
+import com.blankj.utilcode.util.ClickUtils
+import com.fxdehui.epaper_demo.databinding.ActivityMainBinding
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityMainBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        binding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+        initListener()
     }
 
-    fun onViewClick(view: View?) {
-        if (view != null) {
+    private fun initListener() {
+        ClickUtils.applySingleDebouncing(arrayOf(binding.sbutEsptouch2, binding.sbutMqttDeploy), { view ->
             when (view.id) {
                 //配网
                 R.id.sbut_esptouch2 -> {
@@ -23,6 +29,6 @@ class MainActivity : AppCompatActivity() {
                     ARouterNavigationUtils.onMqttConfigureActivity()
                 }
             }
-        }
+        })
     }
 }
