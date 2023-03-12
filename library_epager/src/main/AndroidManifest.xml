@@ -19,5 +19,7 @@
         <activity android:name=".activity.EspTouchActivity"/>
 
         <activity android:name=".activity.MqttConfigureActivity"/>
+
+        <activity android:name=".activity.WiFiScanListActivity"/>
     </application>
 </manifest>

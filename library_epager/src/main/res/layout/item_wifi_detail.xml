@@ -4,9 +4,7 @@
         xmlns:app="http://schemas.android.com/apk/res-auto"
         xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        tools:context=".activity.EspTouchActivity"
-        android:padding="16dp">
+        android:layout_height="wrap_content">
 
     <TextView
             android:id="@+id/tv_ap_ssid_label"
@@ -21,13 +19,16 @@
 
     <TextView
             android:id="@+id/tv_ap_ssid_text"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
+            android:layout_marginEnd="8dp"
             android:singleLine="true"
+            tools:text="SSID"
             android:textAppearance="?android:attr/textAppearanceMedium"
             app:layout_constraintBaseline_toBaselineOf="@id/tv_ap_ssid_label"
             app:layout_constraintStart_toEndOf="@id/tv_ap_ssid_label"
+            app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"/>
 
     <TextView
@@ -99,50 +100,4 @@
             app:layout_constraintStart_toEndOf="@id/tv_wifi_type_label"
             app:layout_constraintTop_toTopOf="@id/tv_wifi_type_label"/>
 
-    <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layout_ap_password"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:hint="@string/esptouch2_password_label"
-            app:layout_constraintTop_toBottomOf="@id/tv_wifi_type_label"
-            app:passwordToggleEnabled="true">
-
-        <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_ap_password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="textPassword"
-                android:singleLine="true"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/layout_device_count"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:visibility="gone"
-            android:hint="@string/esptouch2_device_count"
-            app:layout_constraintTop_toBottomOf="@id/layout_ap_password">
-
-        <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edit_device_count"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:inputType="number"
-                android:text="1"
-                android:singleLine="true"/>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_confirm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/esptouch2_confirm"
-            app:layout_constraintBottom_toBottomOf="parent"/>
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
-

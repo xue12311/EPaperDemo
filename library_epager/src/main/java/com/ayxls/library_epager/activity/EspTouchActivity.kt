@@ -6,6 +6,7 @@ import android.net.wifi.WifiInfo
 import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import androidx.activity.result.ActivityResult
@@ -18,6 +19,7 @@ import com.ayxls.library_epager.constant.ARouterConstants
 import com.ayxls.library_epager.databinding.ActivityEsptouchBinding
 import com.ayxls.library_epager.ext.showPermissionDialog
 import com.ayxls.library_epager.ext.toDefaultInt
+import com.ayxls.library_epager.utils.ARouterNavigationUtils
 import com.ayxls.library_epager.viewmodel.EspTouchViewModel
 import com.blankj.utilcode.util.ClickUtils
 import com.blankj.utilcode.util.NetworkUtils
@@ -60,9 +62,10 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         super.initView(savedInstanceState)
         //左侧添加 返回键
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-        mActivityLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult(), {
-            setActivityResultCallback(it)
-        })
+        mActivityLauncher =
+            registerForActivityResult(ActivityResultContracts.StartActivityForResult(), {
+                setActivityResultCallback(it)
+            })
     }
 
     override fun createObserver() {
@@ -80,11 +83,21 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         onCheckLocationPermission()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_library_epager_esp_touch, menu)
+        return true
+    }
+
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         when (item.itemId) {
             //返回按钮
             android.R.id.home -> {
                 finish()
+                return true
+            }
+            //wifi 列表
+            R.id.menu_scan_wifi_list -> {
+                ARouterNavigationUtils.onWiFiScanListActivity()
                 return true
             }
         }
@@ -118,6 +131,11 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         mViewBinding.tvApSsidText.setText(StringUtils.null2Length0(result.wifi_ssid))
         mViewBinding.tvApBssidText.setText(StringUtils.null2Length0(result.wifi_bssid))
         mViewBinding.tvIpText.setText(StringUtils.null2Length0(result.wifi_ip_address?.hostAddress))
+        if (result.is5G) {
+            mViewBinding.tvWifiTypeText.setText(StringUtils.getString(R.string.esptouch2_wifi_type_5G))
+        } else {
+            mViewBinding.tvWifiTypeText.setText(StringUtils.getString(R.string.esptouch2_wifi_type_24G))
+        }
     }
 
 
@@ -152,9 +170,11 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
             //wifi 名称
             val ssid = ByteUtil.getBytesByString(StringUtils.null2Length0(wifi_result.wifi_ssid))
             //wifi 密码
-            val password = ByteUtil.getBytesByString(StringUtils.null2Length0(wifi_result.wifi_password))
+            val password =
+                ByteUtil.getBytesByString(StringUtils.null2Length0(wifi_result.wifi_password))
             //BSSID地址
-            val bssid = TouchNetUtil.convertBssid2Bytes(StringUtils.null2Length0(wifi_result.wifi_bssid))
+            val bssid =
+                TouchNetUtil.convertBssid2Bytes(StringUtils.null2Length0(wifi_result.wifi_bssid))
             mEsptouchTask = EsptouchTask(ssid, bssid, password, this)
             //发送方式 true 为 广播，false 为 组播
             mEsptouchTask?.setPackageBroadcast(mViewModel.isBroadcastConnect)
@@ -199,19 +219,20 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         }
     }
 
-    private val mNetworkStatusChangedListener = object : NetworkUtils.OnNetworkStatusChangedListener {
-        override fun onDisconnected() {
-            onDisconnectWiFi()
-        }
-
-        override fun onConnected(networkType: NetworkUtils.NetworkType?) {
-            if (networkType != null && networkType == NetworkUtils.NetworkType.NETWORK_WIFI) {
-                getCurrentWifiInfo()
-            } else {
+    private val mNetworkStatusChangedListener =
+        object : NetworkUtils.OnNetworkStatusChangedListener {
+            override fun onDisconnected() {
                 onDisconnectWiFi()
             }
+
+            override fun onConnected(networkType: NetworkUtils.NetworkType?) {
+                if (networkType != null && networkType == NetworkUtils.NetworkType.NETWORK_WIFI) {
+                    getCurrentWifiInfo()
+                } else {
+                    onDisconnectWiFi()
+                }
+            }
         }
-    }
 
     /**
      * wifi 已断开
@@ -231,7 +252,8 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
         if (!result.permission_granted) {
             //获取权限
             onCheckLocationPermission()
-        } else if (!result.wifi_connected || result.is5G) {
+//        } else if (!result.wifi_connected || result.is5G) {
+        } else if (!result.wifi_connected) {
             showToastMessage(result.message)
         } else if (StringUtils.isTrimEmpty(mEtWifiPassword.text.toString())) {
             showToastMessage(StringUtils.getString(R.string.esptouch2_password_label_hint))
@@ -239,7 +261,8 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
             showToastMessage(StringUtils.getString(R.string.esptouch2_device_count_label_hint))
         } else {
             result.wifi_password = StringUtils.null2Length0(mEtWifiPassword.text.toString())
-            result.device_count = StringUtils.null2Length0(mEtDeviceCount.text.toString()).toDefaultInt()
+            result.device_count =
+                StringUtils.null2Length0(mEtDeviceCount.text.toString()).toDefaultInt()
             //开始配网
             onStartEsptouchTask()
         }
@@ -269,10 +292,6 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
             return
         }
         result.is5G = TouchNetUtil.is5G(wifiInfo.frequency)
-//        if (result.is5G) {
-//            result.message = getString(R.string.esptouch_message_wifi_frequency)
-//            return
-//        }
         result.wifi_ssid = TouchNetUtil.getSsidString(wifiInfo)
         result.wifi_bssid = wifiInfo.bssid
         if (wifiInfo.ipAddress != 0) {
@@ -310,7 +329,8 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
      */
     private fun onLocationPermissionDenied() {
         showToastMessage("获取权限失败")
-        mViewModel.getWiFiResult().message = StringUtils.getString(R.string.text_not_authorize_please_authorize_first)
+        mViewModel.getWiFiResult().message =
+            StringUtils.getString(R.string.text_not_authorize_please_authorize_first)
         mViewModel.getWiFiResult().permission_granted = false
     }
 
@@ -319,7 +339,8 @@ class EspTouchActivity : BaseVmVbActivity<EspTouchViewModel, ActivityEsptouchBin
      */
     private fun onLocationPermissionExplained() {
         showToastMessage("获取权限失败 不再询问")
-        mViewModel.getWiFiResult().message = StringUtils.getString(R.string.text_not_authorize_please_authorize_first)
+        mViewModel.getWiFiResult().message =
+            StringUtils.getString(R.string.text_not_authorize_please_authorize_first)
         mViewModel.getWiFiResult().permission_granted = false
     }
 

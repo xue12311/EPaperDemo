@@ -5,6 +5,7 @@ import androidx.multidex.MultiDex
 import com.alibaba.android.arouter.launcher.ARouter
 import com.ayxls.library_epager.base.BaseApplication
 import com.ayxls.library_epager.database.RoomManager
+import com.ayxls.library_epager.utils.SmartRefreshLayoutUtils
 import com.ayxls.library_epager.utils.http_sender.RxHttpManager
 import com.blankj.utilcode.util.*
 
@@ -18,6 +19,8 @@ class MyApplication : BaseApplication() {
     override fun onCreate() {
         super.onCreate()
         Utils.init(this)
+        //设置默认的下拉刷新 上拉加载 控件
+        SmartRefreshLayoutUtils.setDefaultRefreshHeaderAndFooterCreator()
         SPStaticUtils.setDefaultSPUtils(SPUtils.getInstance(AppUtils.getAppPackageName()))
         LogUtils.getConfig()
             //设置 log 总开关

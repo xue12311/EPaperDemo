@@ -13,6 +13,13 @@ object ARouterNavigationUtils {
     fun onEspTouch2Activity() {
         startActivity(ARouterConstants.ARouterActivityEspTouch2)
     }
+    /**
+     * wifi 列表
+     */
+    fun onWiFiScanListActivity() {
+        startActivity(ARouterConstants.ARouterActivityWiFiScanList)
+    }
+
 
     /**
      * mqtt 测试
